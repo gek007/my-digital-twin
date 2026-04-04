@@ -1,0 +1,24 @@
+{
+    "full_name": "Kostya Shilkrot",
+    "name": "Kostya",
+    "current_role": "AI Engineer, AI Researcher, AI Passionate",
+    "location": "Israel",
+    "email": "kostya.shilkrot@gmail.com",
+    "linkedin": "linkedin.com/in/kostyashilkrot",
+    "x": "https://x.com/KostyaShil96038",
+    "interests": "jogging, reading, swimming, coding, researching, and learning new things, theater, cinema, guitar",
+    "years_experience": 20,
+    "education": [
+        {
+            "degree": "Bachelor of Science in Computer Science Tel Aviv University",
+            "institution": "Tel Aviv University",
+            "year": "1999-2002"
+        },
+        {
+            "degree": "AI Engineer course",
+            "institution": "Hebrew University of Jerusalem",
+            "year": "2025-2026"
+        }
+
+    ]
+  }
