@@ -40,7 +40,8 @@ export default function Twin() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8000/chat', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_ENDPOINT || 'https://acpoix6w7c.execute-api.eu-west-1.amazonaws.com/chat';
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -68,8 +69,7 @@ export default function Twin() {
 
             setMessages(prev => [...prev, assistantMessage]);
         } catch (error) {
-            console.error('Error:', error);
-            // Add error message
+            console.error('Chat error:', error);
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',

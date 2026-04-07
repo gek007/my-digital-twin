@@ -60,3 +60,6 @@ next-env.d.ts
 
 # Memory (optional — remove this line if you want to track conversations)
 memory/
+
+lambda-deployment.zip
+lambda-package/

@@ -18,10 +18,16 @@ load_dotenv()
 app = FastAPI()
 
 # Configure CORS
-origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+# Allow all origins for deployed API or specific origins for local development
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+if cors_origins == "*":
+    allow_origins = ["*"]
+else:
+    allow_origins = [origin.strip() for origin in cors_origins.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=allow_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
@@ -66,6 +72,11 @@ def load_conversation(session_id: str) -> List[Dict]:
     """Load conversation history from storage"""
     if USE_S3:
         try:
+            # The boto3 client (s3_client) authenticates using credentials provided by
+            # environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, etc.),
+            # ~/.aws/credentials file, or IAM roles (if running on AWS infrastructure). 
+            # No explicit credentials are passed in this function. Authentication is handled 
+            # automatically when s3_client.get_object is called.
             response = s3_client.get_object(Bucket=S3_BUCKET, Key=get_memory_path(session_id))
             return json.loads(response["Body"].read().decode("utf-8"))
         except ClientError as e:
