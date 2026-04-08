@@ -1,16 +1,16 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from openai import APIError, AuthenticationError, OpenAI, RateLimitError
-import os
-from dotenv import load_dotenv
-from typing import Optional, List, Dict
 import json
+import os
 import uuid
 from datetime import datetime
+from typing import Dict, List, Optional
+
 import boto3
 from botocore.exceptions import ClientError
 from context import prompt
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 # Load environment variables
 load_dotenv()
@@ -18,23 +18,23 @@ load_dotenv()
 app = FastAPI()
 
 # Configure CORS
-# Allow all origins for deployed API or specific origins for local development
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
-if cors_origins == "*":
-    allow_origins = ["*"]
-else:
-    allow_origins = [origin.strip() for origin in cors_origins.split(",")]
-
+origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_origins,
+    allow_origins=origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize Bedrock client - see Q42 on https://edwarddonner.com/faq if the Region gives you problems
+bedrock_client = boto3.client(
+    service_name="bedrock-runtime",
+    region_name=os.getenv("DEFAULT_AWS_REGION", "eu-west-1"),
+)
+
+# Bedrock model selection - see Q42 on https://edwarddonner.com/faq for more
+BEDROCK_MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "global.amazon.nova-2-lite-v1:0")
 
 # Memory storage configuration
 USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
@@ -72,12 +72,9 @@ def load_conversation(session_id: str) -> List[Dict]:
     """Load conversation history from storage"""
     if USE_S3:
         try:
-            # The boto3 client (s3_client) authenticates using credentials provided by
-            # environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, etc.),
-            # ~/.aws/credentials file, or IAM roles (if running on AWS infrastructure). 
-            # No explicit credentials are passed in this function. Authentication is handled 
-            # automatically when s3_client.get_object is called.
-            response = s3_client.get_object(Bucket=S3_BUCKET, Key=get_memory_path(session_id))
+            response = s3_client.get_object(
+                Bucket=S3_BUCKET, Key=get_memory_path(session_id)
+            )
             return json.loads(response["Body"].read().decode("utf-8"))
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
@@ -109,32 +106,69 @@ def save_conversation(session_id: str, messages: List[Dict]):
             json.dump(messages, f, indent=2)
 
 
+def call_bedrock(conversation: List[Dict], user_message: str) -> str:
+    """Call AWS Bedrock with conversation history"""
+
+    # Build messages in Bedrock format
+    messages = []
+
+    # Add system prompt as first user message
+    # Or there's a better way to do this - pass in system=[{"text": prompt()}] to the converse call below
+    messages.append({"role": "user", "content": [{"text": f"System: {prompt()}"}]})
+
+    # Add conversation history (limit to last 25 exchanges)
+    for msg in conversation[-50:]:
+        messages.append({"role": msg["role"], "content": [{"text": msg["content"]}]})
+
+    # Add current user message
+    messages.append({"role": "user", "content": [{"text": user_message}]})
+
+    try:
+        # Call Bedrock using the converse API
+        response = bedrock_client.converse(
+            modelId=BEDROCK_MODEL_ID,
+            messages=messages,
+            inferenceConfig={"maxTokens": 2000, "temperature": 0.7, "topP": 0.9},
+        )
+
+        # Extract the response text
+        return response["output"]["message"]["content"][0]["text"]
+
+    except ClientError as e:
+        error_code = e.response["Error"]["Code"]
+        if error_code == "ValidationException":
+            # Handle message format issues
+            print(f"Bedrock validation error: {e}")
+            raise HTTPException(
+                status_code=400, detail="Invalid message format for Bedrock"
+            )
+        elif error_code == "AccessDeniedException":
+            print(f"Bedrock access denied: {e}")
+            raise HTTPException(
+                status_code=403, detail="Access denied to Bedrock model"
+            )
+        else:
+            print(f"Bedrock error: {e}")
+            raise HTTPException(status_code=500, detail=f"Bedrock error: {str(e)}")
+
+
 @app.get("/")
 async def root():
     return {
-        "message": "AI Digital Twin API",
+        "message": "AI Digital Twin API (Powered by AWS Bedrock)",
         "memory_enabled": True,
         "storage": "S3" if USE_S3 else "local",
+        "ai_model": BEDROCK_MODEL_ID,
     }
 
 
 @app.get("/health")
 async def health_check():
-    return {
-        "status": "healthy",
-        "use_s3": USE_S3,
-        "openai_key_configured": bool(os.getenv("OPENAI_API_KEY")),
-        "llm": "openai",
-    }
+    return {"status": "healthy", "use_s3": USE_S3, "bedrock_model": BEDROCK_MODEL_ID}
 
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(
-            status_code=503,
-            detail="OPENAI_API_KEY is not set (add it to Lambda environment variables or .env locally).",
-        )
     try:
         # Generate session ID if not provided
         session_id = request.session_id or str(uuid.uuid4())
@@ -142,31 +176,16 @@ async def chat(request: ChatRequest):
         # Load conversation history
         conversation = load_conversation(session_id)
 
-        # Build messages for OpenAI
-        messages = [{"role": "system", "content": prompt()}]
-
-        # Add conversation history (keep last 10 messages for context window)
-        for msg in conversation[-10:]:
-            messages.append({"role": msg["role"], "content": msg["content"]})
-
-        # Add current user message
-        messages.append({"role": "user", "content": request.message})
-
-        # Call OpenAI API
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-        )
-
-        assistant_response = response.choices[0].message.content
-        if assistant_response is None:
-            raise HTTPException(
-                status_code=502, detail="OpenAI returned no message content"
-            )
+        # Call Bedrock for response
+        assistant_response = call_bedrock(conversation, request.message)
 
         # Update conversation history
         conversation.append(
-            {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()}
+            {
+                "role": "user",
+                "content": request.message,
+                "timestamp": datetime.now().isoformat(),
+            }
         )
         conversation.append(
             {
@@ -177,38 +196,15 @@ async def chat(request: ChatRequest):
         )
 
         # Save conversation
-        try:
-            save_conversation(session_id, conversation)
-        except ClientError as e:
-            code = e.response.get("Error", {}).get("Code", "")
-            print(f"S3 save failed in chat: {code} {e}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to save conversation to S3: {code or str(e)}",
-            ) from e
+        save_conversation(session_id, conversation)
 
         return ChatResponse(response=assistant_response, session_id=session_id)
 
     except HTTPException:
         raise
-    except AuthenticationError as e:
-        print(f"OpenAI authentication error: {e}")
-        raise HTTPException(
-            status_code=401,
-            detail="OpenAI authentication failed (check OPENAI_API_KEY).",
-        ) from e
-    except RateLimitError as e:
-        print(f"OpenAI rate limit: {e}")
-        raise HTTPException(status_code=429, detail="OpenAI rate limit; try again shortly.") from e
-    except APIError as e:
-        print(f"OpenAI API error: {e}")
-        raise HTTPException(
-            status_code=502,
-            detail=f"OpenAI API error: {getattr(e, 'message', str(e))}",
-        ) from e
     except Exception as e:
         print(f"Error in chat endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/conversation/{session_id}")
