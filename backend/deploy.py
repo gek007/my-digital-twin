@@ -1,11 +1,15 @@
 import os
 import shutil
 import subprocess
-import zipfile
 import sys
+import zipfile
 
 
 def main():
+    # Always run relative to this script so `python deploy.py` works from any cwd
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(backend_dir)
+
     print("Creating Lambda deployment package...")
 
     # Clean up
@@ -18,34 +22,56 @@ def main():
     os.makedirs("lambda-package")
 
     # Install Linux-compatible dependencies targeting Lambda's Python 3.12 runtime.
-    # Using --platform and --only-binary ensures we get manylinux wheels (Linux .so files)
-    # even when building on Windows/macOS, avoiding runtime import errors on Lambda.
+    # uv's venv has no bundled pip — use `uv pip`, not `python -m pip`.
     print("Installing Linux-compatible dependencies...")
+    uv = shutil.which("uv")
+    if not uv:
+        print(
+            "error: `uv` not found on PATH. Install uv (https://docs.astral.sh/uv/) "
+            "or use a venv that includes pip and run: python -m pip install ...",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     subprocess.run(
         [
-            sys.executable,
-            "-m",
+            uv,
             "pip",
             "install",
-            "--platform", "manylinux2014_x86_64",
-            "--python-version", "312",
-            "--only-binary=:all:",
-            "--target", "lambda-package",
-            "-r", "requirements.txt",
+            "--python-version",
+            "3.12",
+            "--python-platform",
+            "x86_64-manylinux2014",
+            "--only-binary",
+            ":all:",
+            "--target",
+            "lambda-package",
+            "-r",
+            "requirements.txt",
             "--upgrade",
         ],
         check=True,
     )
 
-    # Copy application files
+    # Copy application files (must sit at zip root). Lambda handler (Console → Configuration → Runtime settings):
+    #   lambda_handler.handler          — recommended (Mangum entrypoint in lambda_handler.py)
+    #   lambda_function.lambda_handler  — optional shim (lambda_function.py) for older tutorials using that name
     print("Copying application files...")
-    for file in ["server.py", "lambda_handler.py", "context.py", "resources.py"]:
-        if os.path.exists(file):
-            shutil.copy2(file, "lambda-package/")
+    for name in [
+        "server.py",
+        "lambda_handler.py",
+        "lambda_function.py",
+        "context.py",
+        "resources.py",
+    ]:
+        src = os.path.join(backend_dir, name)
+        if os.path.exists(src):
+            shutil.copy2(src, "lambda-package/")
+        else:
+            print(f"warning: missing {name}, package may be incomplete", file=sys.stderr)
 
-    # Copy data directory
-    if os.path.exists("data"):
-        shutil.copytree("data", "lambda-package/data")
+    data_dir = os.path.join(backend_dir, "data")
+    if os.path.exists(data_dir):
+        shutil.copytree(data_dir, "lambda-package/data")
 
     # Create zip
     print("Creating zip file...")
