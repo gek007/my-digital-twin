@@ -107,32 +107,39 @@ def save_conversation(session_id: str, messages: List[Dict]):
 
 
 def call_bedrock(conversation: List[Dict], user_message: str) -> str:
-    """Call AWS Bedrock with conversation history"""
+    """Call AWS Bedrock with conversation history.
 
-    # Build messages in Bedrock format
+    Converse API requires strict user/assistant alternation.
+    System prompt must use the ``system`` parameter, not a fake user message.
+    """
     messages = []
 
-    # Add system prompt as first user message
-    # Or there's a better way to do this - pass in system=[{"text": prompt()}] to the converse call below
-    messages.append({"role": "user", "content": [{"text": f"System: {prompt()}"}]})
-
-    # Add conversation history (limit to last 25 exchanges)
+    # Add conversation history with strict alternation (merge consecutive same-role turns)
     for msg in conversation[-50:]:
-        messages.append({"role": msg["role"], "content": [{"text": msg["content"]}]})
+        role = msg.get("role")
+        if role not in ("user", "assistant"):
+            continue
+        text = (msg.get("content") or "").strip()
+        if not text:
+            continue
+        if messages and messages[-1]["role"] == role:
+            # merge consecutive same-role turns
+            messages[-1]["content"] = [{"text": messages[-1]["content"][0]["text"] + "\n\n" + text}]
+        else:
+            messages.append({"role": role, "content": [{"text": text}]})
 
-    # Add current user message
-    messages.append({"role": "user", "content": [{"text": user_message}]})
+    messages.append({"role": "user", "content": [{"text": user_message.strip()}]})
 
     try:
-        # Call Bedrock using the converse API
         response = bedrock_client.converse(
             modelId=BEDROCK_MODEL_ID,
             messages=messages,
+            system=[{"text": prompt()}],
             inferenceConfig={"maxTokens": 2000, "temperature": 0.7, "topP": 0.9},
         )
 
-        # Extract the response text
-        return response["output"]["message"]["content"][0]["text"]
+        blocks = response.get("output", {}).get("message", {}).get("content") or []
+        return "".join(b["text"] for b in blocks if "text" in b)
 
     except ClientError as e:
         error_code = e.response["Error"]["Code"]
