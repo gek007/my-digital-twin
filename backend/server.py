@@ -27,10 +27,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Bedrock client - see Q42 on https://edwarddonner.com/faq if the Region gives you problems
+# Bedrock runtime region: BEDROCK_REGION overrides DEFAULT_AWS_REGION (e.g. us-east-1 for higher quotas)
+_bedrock_region = os.getenv("BEDROCK_REGION") or os.getenv("DEFAULT_AWS_REGION", "eu-west-1")
 bedrock_client = boto3.client(
     service_name="bedrock-runtime",
-    region_name=os.getenv("DEFAULT_AWS_REGION", "us-east-1"),
+    region_name=_bedrock_region,
 )
 
 # Bedrock model selection - see Q42 on https://edwarddonner.com/faq for more
@@ -128,9 +129,20 @@ def call_bedrock(conversation: List[Dict], user_message: str) -> str:
         else:
             messages.append({"role": role, "content": [{"text": text}]})
 
+    # Converse must not have two consecutive "user" turns. Incomplete S3 history
+    # (last message is user with no assistant reply) would cause that — drop it.
+    while messages and messages[0]["role"] == "assistant":
+        messages.pop(0)
+    if messages and messages[-1]["role"] == "user":
+        messages.pop()
+
     messages.append({"role": "user", "content": [{"text": user_message.strip()}]})
 
     try:
+        print(
+            f"[bedrock] model={BEDROCK_MODEL_ID} region={_bedrock_region} "
+            f"turns={len(messages)}"
+        )
         response = bedrock_client.converse(
             modelId=BEDROCK_MODEL_ID,
             messages=messages,
@@ -139,15 +151,18 @@ def call_bedrock(conversation: List[Dict], user_message: str) -> str:
         )
 
         blocks = response.get("output", {}).get("message", {}).get("content") or []
-        return "".join(b["text"] for b in blocks if "text" in b)
+        out = "".join(b["text"] for b in blocks if "text" in b)
+        usage = response.get("usage") or {}
+        print(f"[bedrock] ok out_len={len(out)} usage={usage}")
+        return out
 
     except ClientError as e:
         error_code = e.response["Error"]["Code"]
         if error_code == "ValidationException":
-            # Handle message format issues
-            print(f"Bedrock validation error: {e}")
+            aws_msg = e.response.get("Error", {}).get("Message", str(e))
+            print(f"Bedrock validation error: {aws_msg}")
             raise HTTPException(
-                status_code=400, detail="Invalid message format for Bedrock"
+                status_code=400, detail=f"Bedrock validation: {aws_msg}"
             )
         elif error_code == "AccessDeniedException":
             print(f"Bedrock access denied: {e}")
@@ -171,7 +186,12 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "use_s3": USE_S3, "bedrock_model": BEDROCK_MODEL_ID}
+    return {
+        "status": "healthy",
+        "use_s3": USE_S3,
+        "bedrock_model": BEDROCK_MODEL_ID,
+        "bedrock_region": _bedrock_region,
+    }
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -179,6 +199,7 @@ async def chat(request: ChatRequest):
     try:
         # Generate session ID if not provided
         session_id = request.session_id or str(uuid.uuid4())
+        print(f"[chat] session={session_id} msg_len={len(request.message or '')}")
 
         # Load conversation history
         conversation = load_conversation(session_id)
@@ -205,12 +226,14 @@ async def chat(request: ChatRequest):
         # Save conversation
         save_conversation(session_id, conversation)
 
+        print(f"[chat] saved session={session_id}")
         return ChatResponse(response=assistant_response, session_id=session_id)
 
-    except HTTPException:
+    except HTTPException as e:
+        print(f"[chat] HTTPException {e.status_code}: {e.detail}")
         raise
     except Exception as e:
-        print(f"Error in chat endpoint: {str(e)}")
+        print(f"[chat] Error: {repr(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
