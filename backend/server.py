@@ -1,16 +1,17 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from openai import OpenAI
-import os
-from dotenv import load_dotenv
-from typing import Optional, List, Dict
 import json
+import os
 import uuid
 from datetime import datetime
+from typing import Dict, List, Optional
+
 import boto3
 from botocore.exceptions import ClientError
 from context import prompt
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from openai import OpenAI
+from pydantic import BaseModel
 
 # Load environment variables
 load_dotenv()
@@ -18,16 +19,10 @@ load_dotenv()
 app = FastAPI()
 
 # Configure CORS
-# Allow all origins for deployed API or specific origins for local development
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
-if cors_origins == "*":
-    allow_origins = ["*"]
-else:
-    allow_origins = [origin.strip() for origin in cors_origins.split(",")]
-
+origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_origins,
+    allow_origins=origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
@@ -72,12 +67,9 @@ def load_conversation(session_id: str) -> List[Dict]:
     """Load conversation history from storage"""
     if USE_S3:
         try:
-            # The boto3 client (s3_client) authenticates using credentials provided by
-            # environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, etc.),
-            # ~/.aws/credentials file, or IAM roles (if running on AWS infrastructure). 
-            # No explicit credentials are passed in this function. Authentication is handled 
-            # automatically when s3_client.get_object is called.
-            response = s3_client.get_object(Bucket=S3_BUCKET, Key=get_memory_path(session_id))
+            response = s3_client.get_object(
+                Bucket=S3_BUCKET, Key=get_memory_path(session_id)
+            )
             return json.loads(response["Body"].read().decode("utf-8"))
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
@@ -144,15 +136,18 @@ async def chat(request: ChatRequest):
 
         # Call OpenAI API
         response = client.chat.completions.create(
-            model="gpt-4o-mini", 
-            messages=messages
+            model="gpt-4o-mini", messages=messages
         )
 
         assistant_response = response.choices[0].message.content
 
         # Update conversation history
         conversation.append(
-            {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()}
+            {
+                "role": "user",
+                "content": request.message,
+                "timestamp": datetime.now().isoformat(),
+            }
         )
         conversation.append(
             {

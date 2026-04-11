@@ -28,10 +28,12 @@ export default function Twin() {
     const sendMessage = async () => {
         if (!input.trim() || isLoading) return;
 
+        const messageText = input.trim();
+
         const userMessage: Message = {
             id: Date.now().toString(),
             role: 'user',
-            content: input,
+            content: messageText,
             timestamp: new Date(),
         };
 
@@ -47,12 +49,28 @@ export default function Twin() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    message: input,
+                    message: messageText,
                     session_id: sessionId || undefined,
                 }),
             });
 
-            if (!response.ok) throw new Error('Failed to send message');
+            if (!response.ok) {
+                let detail = `${response.status} ${response.statusText}`;
+                try {
+                    const errBody = await response.json();
+                    if (typeof errBody?.detail === 'string') {
+                        detail = errBody.detail;
+                    } else if (Array.isArray(errBody?.detail)) {
+                        detail = errBody.detail
+                            .map((d: { msg?: string }) => d.msg || JSON.stringify(d))
+                            .join('; ');
+                    }
+                } catch {
+                    /* ignore JSON parse errors */
+                }
+                console.error('Chat HTTP error:', detail);
+                throw new Error(detail);
+            }
 
             const data = await response.json();
 
@@ -63,17 +81,19 @@ export default function Twin() {
             const assistantMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: data.response,
+                content: data.response ?? '(empty response)',
                 timestamp: new Date(),
             };
 
             setMessages(prev => [...prev, assistantMessage]);
         } catch (error) {
+            const text =
+                error instanceof Error ? error.message : 'Unknown error (see browser console).';
             console.error('Chat error:', error);
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: 'Sorry, I encountered an error. Please try again.',
+                content: `Sorry, something went wrong: ${text}`,
                 timestamp: new Date(),
             };
             setMessages(prev => [...prev, errorMessage]);

@@ -2,7 +2,6 @@ import os
 import shutil
 import subprocess
 import zipfile
-import sys
 
 
 def main():
@@ -17,22 +16,26 @@ def main():
     # Create package directory
     os.makedirs("lambda-package")
 
-    # Install Linux-compatible dependencies targeting Lambda's Python 3.12 runtime.
-    # Using --platform and --only-binary ensures we get manylinux wheels (Linux .so files)
-    # even when building on Windows/macOS, avoiding runtime import errors on Lambda.
-    print("Installing Linux-compatible dependencies...")
+    # Install dependencies using Docker with Lambda runtime image
+    print("Installing dependencies for Lambda runtime...")
+
+    # Use the official AWS Lambda Python 3.12 image
+    # This ensures compatibility with Lambda's runtime environment
     subprocess.run(
         [
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            "--platform", "manylinux2014_x86_64",
-            "--python-version", "312",
-            "--only-binary=:all:",
-            "--target", "lambda-package",
-            "-r", "requirements.txt",
-            "--upgrade",
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{os.getcwd()}:/var/task",
+            "--platform",
+            "linux/amd64",  # Force x86_64 architecture
+            "--entrypoint",
+            "",  # Override the default entrypoint
+            "public.ecr.aws/lambda/python:3.12",
+            "/bin/sh",
+            "-c",
+            "pip install --target /var/task/lambda-package -r /var/task/requirements.txt --platform manylinux2014_x86_64 --only-binary=:all: --upgrade",
         ],
         check=True,
     )
@@ -56,8 +59,9 @@ def main():
                 arcname = os.path.relpath(file_path, "lambda-package")
                 zipf.write(file_path, arcname)
 
+    # Show package size
     size_mb = os.path.getsize("lambda-deployment.zip") / (1024 * 1024)
-    print(f"Created lambda-deployment.zip ({size_mb:.2f} MB)")
+    print(f"✓ Created lambda-deployment.zip ({size_mb:.2f} MB)")
 
 
 if __name__ == "__main__":
