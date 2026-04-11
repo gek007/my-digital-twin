@@ -1,0 +1,21 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - heading "AI in Production" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Deploy your Digital Twin to the cloud
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - heading "AI Digital Twin" [level=2] [ref=e10]:
+            - img [ref=e11]
+            - text: AI Digital Twin
+          - paragraph [ref=e14]: Your AI course companion
+        - generic [ref=e16]:
+          - img [ref=e17]
+          - paragraph [ref=e20]: Hello! I'm your Digital Twin.
+          - paragraph [ref=e21]: Ask me anything about AI deployment!
+        - generic [ref=e23]:
+          - textbox "Type your message..." [ref=e24]
+          - button [disabled] [ref=e25]:
+            - img [ref=e26]
+      - paragraph [ref=e30]: "Week 2: Building Your Digital Twin"
+  - alert [ref=e31]

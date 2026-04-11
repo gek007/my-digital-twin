@@ -5,4 +5,4 @@ npx create-next-app@latest frontend --typescript --tailwind --app --no-src-dir
 # 2. backednd side will be added manually 
 
 
-
+https://d3a70otuz0olbv.cloudfront.net/
