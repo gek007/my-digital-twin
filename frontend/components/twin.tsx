@@ -1,6 +1,6 @@
 'use client';
 
-import { Bot, Send, User } from 'lucide-react';
+import { Bot, Send, Sparkles, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface Message {
@@ -37,7 +37,7 @@ export default function Twin() {
             timestamp: new Date(),
         };
 
-        setMessages(prev => [...prev, userMessage]);
+        setMessages((prev) => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
@@ -85,7 +85,7 @@ export default function Twin() {
                 timestamp: new Date(),
             };
 
-            setMessages(prev => [...prev, assistantMessage]);
+            setMessages((prev) => [...prev, assistantMessage]);
         } catch (error) {
             const text =
                 error instanceof Error ? error.message : 'Unknown error (see browser console).';
@@ -96,7 +96,7 @@ export default function Twin() {
                 content: `Sorry, something went wrong: ${text}`,
                 timestamp: new Date(),
             };
-            setMessages(prev => [...prev, errorMessage]);
+            setMessages((prev) => [...prev, errorMessage]);
         } finally {
             setIsLoading(false);
         }
@@ -110,52 +110,76 @@ export default function Twin() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 rounded-lg shadow-lg">
+        <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgb(12_12_18/0.75)] shadow-[0_24px_80px_-20px_rgb(0_0_0/0.65)] backdrop-blur-xl">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-4 rounded-t-lg">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <Bot className="w-6 h-6" />
-                    AI Digital Twin
-                </h2>
-                <p className="text-sm text-slate-300 mt-1">Your AI course companion</p>
+            <div className="relative overflow-hidden border-b border-white/[0.08] px-5 py-5">
+                <div
+                    className="pointer-events-none absolute inset-0 opacity-40"
+                    style={{
+                        background:
+                            'linear-gradient(135deg, rgb(0 217 165 / 0.12) 0%, transparent 45%, rgb(255 77 109 / 0.08) 100%)',
+                    }}
+                    aria-hidden
+                />
+                <div className="relative flex items-start gap-4">
+                    <div className="relative">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#00d9a5]/40 bg-[#00d9a5]/10 shadow-[0_0_20px_rgb(0_217_165/0.25)]">
+                            <Bot className="h-6 w-6 text-[#00d9a5]" aria-hidden />
+                        </div>
+                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#12121a] bg-[#00d9a5]" title="Online" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <h2 className="font-display flex items-center gap-2 text-xl font-bold tracking-tight text-[#e8e4dc]">
+                            Digital Twin
+                            <Sparkles className="h-4 w-4 shrink-0 text-[#ff4d6d]" aria-hidden />
+                        </h2>
+                        <p className="mt-0.5 text-sm text-[#a8a29e]">Your AI course companion · ask about deployment &amp; production</p>
+                    </div>
+                </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 space-y-4 overflow-y-auto p-4 md:p-5">
                 {messages.length === 0 && (
-                    <div className="text-center text-gray-500 mt-8">
-                        <Bot className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                        <p>Hello! I&apos;m your Digital Twin.</p>
-                        <p className="text-sm mt-2">Ask me anything about AI deployment!</p>
+                    <div className="flex flex-col items-center justify-center px-4 py-8 text-center md:py-12">
+                        <div className="relative mb-6">
+                            <div className="animate-pulse-ring absolute inset-0 rounded-full bg-[#00d9a5]/20 blur-xl" aria-hidden />
+                            <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl border border-white/[0.12] bg-gradient-to-br from-[#00d9a5]/20 to-[#ff4d6d]/10">
+                                <Bot className="h-10 w-10 text-[#e8e4dc]" strokeWidth={1.25} />
+                            </div>
+                        </div>
+                        <p className="font-display text-lg font-semibold text-[#e8e4dc]">Hello — I&apos;m your Digital Twin</p>
+                        <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#a8a29e]">
+                            Ask anything about AI deployment, APIs, or the course. I respond from your cloud backend.
+                        </p>
                     </div>
                 )}
 
-                {messages.map((message) => (
+                {messages.map((message, i) => (
                     <div
                         key={message.id}
-                        className={`flex gap-3 ${
-                            message.role === 'user' ? 'justify-end' : 'justify-start'
-                        }`}
+                        className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        style={{ animation: `rise-fade 0.45s ease ${i * 0.03}s both` }}
                     >
                         {message.role === 'assistant' && (
-                            <div className="flex-shrink-0">
-                                <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
-                                    <Bot className="w-5 h-5 text-white" />
+                            <div className="flex-shrink-0 pt-1">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#00d9a5]/30 bg-[#00d9a5]/10">
+                                    <Bot className="h-4 w-4 text-[#00d9a5]" aria-hidden />
                                 </div>
                             </div>
                         )}
 
                         <div
-                            className={`max-w-[70%] rounded-lg p-3 ${
+                            className={`max-w-[min(85%,28rem)] rounded-2xl px-4 py-3 ${
                                 message.role === 'user'
-                                    ? 'bg-slate-700 text-white'
-                                    : 'bg-white border border-gray-200 text-gray-800'
+                                    ? 'border border-[#ff4d6d]/25 bg-gradient-to-br from-[#ff4d6d]/20 to-[#ff4d6d]/5 text-[#fdf7f5]'
+                                    : 'border border-white/[0.08] bg-[rgb(18_18_26/0.9)] text-[#e8e4dc] shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]'
                             }`}
                         >
-                            <p className="whitespace-pre-wrap">{message.content}</p>
+                            <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{message.content}</p>
                             <p
-                                className={`text-xs mt-1 ${
-                                    message.role === 'user' ? 'text-slate-300' : 'text-gray-500'
+                                className={`mt-2 text-[11px] font-medium uppercase tracking-wider ${
+                                    message.role === 'user' ? 'text-[#fecdd3]/80' : 'text-[#78716c]'
                                 }`}
                             >
                                 {message.timestamp.toLocaleTimeString()}
@@ -163,9 +187,9 @@ export default function Twin() {
                         </div>
 
                         {message.role === 'user' && (
-                            <div className="flex-shrink-0">
-                                <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                                    <User className="w-5 h-5 text-white" />
+                            <div className="flex-shrink-0 pt-1">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.06]">
+                                    <User className="h-4 w-4 text-[#e8e4dc]" aria-hidden />
                                 </div>
                             </div>
                         )}
@@ -174,16 +198,16 @@ export default function Twin() {
 
                 {isLoading && (
                     <div className="flex gap-3 justify-start">
-                        <div className="flex-shrink-0">
-                            <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
-                                <Bot className="w-5 h-5 text-white" />
+                        <div className="flex-shrink-0 pt-1">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#00d9a5]/30 bg-[#00d9a5]/10">
+                                <Bot className="h-4 w-4 text-[#00d9a5]" aria-hidden />
                             </div>
                         </div>
-                        <div className="bg-white border border-gray-200 rounded-lg p-3">
-                            <div className="flex space-x-2">
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+                        <div className="rounded-2xl border border-white/[0.08] bg-[rgb(18_18_26/0.9)] px-5 py-4">
+                            <div className="flex items-center gap-2">
+                                <span className="h-2 w-2 rounded-full bg-[#00d9a5] animate-bounce-dot" />
+                                <span className="h-2 w-2 rounded-full bg-[#00d9a5] animate-bounce-dot delay-dot-1" />
+                                <span className="h-2 w-2 rounded-full bg-[#ff4d6d] animate-bounce-dot delay-dot-2" />
                             </div>
                         </div>
                     </div>
@@ -193,23 +217,25 @@ export default function Twin() {
             </div>
 
             {/* Input */}
-            <div className="border-t border-gray-200 p-4 bg-white rounded-b-lg">
+            <div className="border-t border-white/[0.08] bg-[rgb(10_10_14/0.6)] p-4 backdrop-blur-md">
                 <div className="flex gap-2">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyPress}
-                        placeholder="Type your message..."
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-transparent text-gray-800"
+                        placeholder="Ask about deployment, APIs, or the course…"
+                        className="min-w-0 flex-1 rounded-xl border border-white/[0.1] bg-[rgb(18_18_26/0.85)] px-4 py-3 text-[15px] text-[#e8e4dc] placeholder:text-[#57534e] outline-none ring-0 transition-[border-color,box-shadow] focus:border-[#00d9a5]/50 focus:shadow-[0_0_0_3px_rgb(0_217_165/0.12)]"
                         disabled={isLoading}
                     />
                     <button
+                        type="button"
                         onClick={sendMessage}
                         disabled={!input.trim() || isLoading}
-                        className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="flex shrink-0 items-center justify-center rounded-xl border border-[#00d9a5]/40 bg-[#00d9a5]/15 px-4 py-3 text-[#00d9a5] transition hover:bg-[#00d9a5]/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00d9a5] disabled:cursor-not-allowed disabled:opacity-40"
+                        aria-label="Send message"
                     >
-                        <Send className="w-5 h-5" />
+                        <Send className="h-5 w-5" />
                     </button>
                 </div>
             </div>
