@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "code-reviewer": {
+      "source": "google-gemini/gemini-cli",
+      "sourceType": "github",
+      "computedHash": "270f0dd1d4c15a798bad5253a309cdc2056fe5322f99ba06ca22ce50581adc02"
+    },
+    "frontend-design": {
+      "source": "anthropics/claude-plugins-official",
+      "sourceType": "github",
+      "computedHash": "0c15c7b5dd912be05590ff8ebf1e583f57ae8d9262ea73bafbc18cf5865d73e8"
+    },
+    "feature-dev": {
+      "source": "anthropics/claude-plugins-official",
+      "sourceType": "github",
+      "computedHash": "e98516dd238c6fd8d0195128ab97c0ff97ff0f053ec6c1a2f44b99a83fd91e2f"
+    }
+  }
+}
