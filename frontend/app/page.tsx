@@ -43,7 +43,7 @@ export default function Home() {
         <div className="mx-auto max-w-4xl">
           <header className="mb-10 md:mb-12">
             <p className="font-display opacity-0-start animate-rise-fade stagger-1 mb-3 text-xs font-semibold uppercase tracking-[0.35em] text-[#00d9a5]">
-              Production
+              Kostya Shilkrot Production
             </p>
             <h1 className="font-display opacity-0-start animate-rise-fade stagger-2 text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl lg:text-6xl">
               AI in{' '}
