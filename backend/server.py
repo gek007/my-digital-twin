@@ -1,24 +1,18 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from openai import APIError, AuthenticationError, OpenAI, RateLimitError
-import os
-from dotenv import load_dotenv
-from typing import Optional, List, Dict
 import json
-
+import os
 import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
-from backend.context import prompt
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from openai import OpenAI
+from openai import APIError, AuthenticationError, OpenAI, RateLimitError
 from pydantic import BaseModel
+
+from context import prompt
 
 # Load environment variables
 load_dotenv()
@@ -227,4 +221,5 @@ async def get_conversation(session_id: str):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
