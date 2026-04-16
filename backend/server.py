@@ -6,13 +6,12 @@ from typing import Dict, List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
+from context import prompt
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from openai import APIError, AuthenticationError, OpenAI, RateLimitError
+from openai import OpenAI
 from pydantic import BaseModel
-
-from context import prompt
 
 # Load environment variables
 load_dotenv()
@@ -113,21 +112,11 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {
-        "status": "healthy",
-        "use_s3": USE_S3,
-        "openai_key_configured": bool(os.getenv("OPENAI_API_KEY")),
-        "llm": "openai",
-    }
+    return {"status": "healthy", "use_s3": USE_S3}
 
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(
-            status_code=503,
-            detail="OPENAI_API_KEY is not set (add it to Lambda environment variables or .env locally).",
-        )
     try:
         # Generate session ID if not provided
         session_id = request.session_id or str(uuid.uuid4())
@@ -147,15 +136,10 @@ async def chat(request: ChatRequest):
 
         # Call OpenAI API
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
+            model="gpt-4o-mini", messages=messages
         )
 
         assistant_response = response.choices[0].message.content
-        if assistant_response is None:
-            raise HTTPException(
-                status_code=502, detail="OpenAI returned no message content"
-            )
 
         # Update conversation history
         conversation.append(
@@ -174,38 +158,13 @@ async def chat(request: ChatRequest):
         )
 
         # Save conversation
-        try:
-            save_conversation(session_id, conversation)
-        except ClientError as e:
-            code = e.response.get("Error", {}).get("Code", "")
-            print(f"S3 save failed in chat: {code} {e}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to save conversation to S3: {code or str(e)}",
-            ) from e
+        save_conversation(session_id, conversation)
 
         return ChatResponse(response=assistant_response, session_id=session_id)
 
-    except HTTPException:
-        raise
-    except AuthenticationError as e:
-        print(f"OpenAI authentication error: {e}")
-        raise HTTPException(
-            status_code=401,
-            detail="OpenAI authentication failed (check OPENAI_API_KEY).",
-        ) from e
-    except RateLimitError as e:
-        print(f"OpenAI rate limit: {e}")
-        raise HTTPException(status_code=429, detail="OpenAI rate limit; try again shortly.") from e
-    except APIError as e:
-        print(f"OpenAI API error: {e}")
-        raise HTTPException(
-            status_code=502,
-            detail=f"OpenAI API error: {getattr(e, 'message', str(e))}",
-        ) from e
     except Exception as e:
         print(f"Error in chat endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/conversation/{session_id}")
@@ -221,5 +180,4 @@ async def get_conversation(session_id: str):
 if __name__ == "__main__":
     import uvicorn
 
-    port = int(os.getenv("PORT", "8000"))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
