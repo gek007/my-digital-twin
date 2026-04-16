@@ -4,8 +4,10 @@ npx create-next-app@latest frontend --typescript --tailwind --app --no-src-dir
 
 # 2. backednd side will be added manually 
 
-https://d3a70otuz0olbv.cloudfront.net/
+====================================================
 
-https://acpoix6w7c.execute-api.eu-west-1.amazonaws.com/
+# access to app via internet (from cloudfront)
 
-http://twin-frontend-3374-6209-5261.s3-website-us-east-1.amazonaws.com
+d3a70otuz0olbv.cloudfront.net
+
+
