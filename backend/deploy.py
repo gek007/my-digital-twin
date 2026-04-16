@@ -16,23 +16,26 @@ def main():
     # Create package directory
     os.makedirs("lambda-package")
 
-    # Install dependencies targeting the Lambda runtime (linux/amd64, Python 3.12)
-    # pip's --platform flag downloads the correct pre-built wheels without needing Docker
+    # Install dependencies using Docker with Lambda runtime image
     print("Installing dependencies for Lambda runtime...")
+
+    # Use the official AWS Lambda Python 3.12 image
+    # This ensures compatibility with Lambda's runtime environment
     subprocess.run(
         [
-            "pip",
-            "install",
-            "--target",
-            "lambda-package",
-            "-r",
-            "requirements.txt",
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{os.getcwd()}:/var/task",
             "--platform",
-            "manylinux2014_x86_64",
-            "--python-version",
-            "3.12",
-            "--only-binary=:all:",
-            "--upgrade",
+            "linux/amd64",  # Force x86_64 architecture
+            "--entrypoint",
+            "",  # Override the default entrypoint
+            "public.ecr.aws/lambda/python:3.12",
+            "/bin/sh",
+            "-c",
+            "pip install --target /var/task/lambda-package -r /var/task/requirements.txt --platform manylinux2014_x86_64 --only-binary=:all: --upgrade",
         ],
         check=True,
     )

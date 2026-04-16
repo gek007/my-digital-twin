@@ -1,6 +1,6 @@
 'use client';
 
-import { Bot, Send, User, ArrowRight } from 'lucide-react';
+import { ArrowRight, Bot, Send, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface Message {
@@ -48,8 +48,9 @@ export default function Twin() {
         setIsLoading(true);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_ENDPOINT || 'https://acpoix6w7c.execute-api.eu-west-1.amazonaws.com/chat';
+            const apiUrl = process.env.NEXT_PUBLIC_API_ENDPOINT || 'http://localhost:8000/chat';
             const response = await fetch(apiUrl, {
+    
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
