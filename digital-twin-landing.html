@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Digital Twin – AI That Knows Me</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #0f1419;
+            --gold: #d4af37;
+            --cream: #f5f2ed;
+            --slate: #2a2f3a;
+            --accent: #00d9ff;
+            --text-primary: #1a1f2e;
+            --text-light: #6b7280;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--navy) 0%, #1a1f2e 50%, #0a0d12 100%);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Subtle animated background texture */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 217, 255, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrapper {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 80px 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(40px);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-30px) translateX(20px); }
+        }
+
+        .hero-content {
+            flex: 1;
+            z-index: 2;
+            animation: slideInLeft 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-60px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hero-content h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            font-weight: 300;
+            line-height: 1.6;
+            max-width: 500px;
+            margin-bottom: 40px;
+        }
+
+        .hero-content .accent-text {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            animation: slideInUp 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 2px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--gold);
+            color: var(--navy);
+        }
+
+        .btn-primary:hover {
+            background: #e5c158;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--gold);
+            border: 2px solid var(--gold);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gold);
+            color: var(--navy);
+            transform: translateY(-2px);
+        }
+
+        /* ===== ORBS/VISUAL TWIN ===== */
+        .orb-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            height: 500px;
+        }
+
+        .orb {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(135deg, #1a2f4a 0%, #0f1419 100%);
+            border-radius: 50%;
+            box-shadow:
+                0 0 60px rgba(212, 175, 55, 0.4),
+                0 0 100px rgba(0, 217, 255, 0.1),
+                inset 0 0 60px rgba(212, 175, 55, 0.1);
+            animation: orbPulse 4s ease-in-out infinite;
+            overflow: hidden;
+        }
+
+        @keyframes orbPulse {
+            0%, 100% {
+                box-shadow:
+                    0 0 60px rgba(212, 175, 55, 0.4),
+                    0 0 100px rgba(0, 217, 255, 0.1),
+                    inset 0 0 60px rgba(212, 175, 55, 0.1);
+            }
+            50% {
+                box-shadow:
+                    0 0 80px rgba(212, 175, 55, 0.6),
+                    0 0 140px rgba(0, 217, 255, 0.2),
+                    inset 0 0 80px rgba(212, 175, 55, 0.2);
+            }
+        }
+
+        .orb::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                rgba(212, 175, 55, 0.3) 90deg,
+                rgba(0, 217, 255, 0.2) 180deg,
+                transparent 270deg
+            );
+            animation: spinGradient 8s linear infinite;
+        }
+
+        @keyframes spinGradient {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .orb-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            color: var(--gold);
+            z-index: 2;
+        }
+
+        .orb-knowledge {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            border: 2px dashed rgba(212, 175, 55, 0.3);
+            border-radius: 50%;
+            animation: orbRotate 15s linear infinite;
+        }
+
+        @keyframes orbRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .knowledge-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* ===== SECTIONS ===== */
+        .section {
+            padding: 120px 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 60px;
+            color: var(--cream);
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold) 0%, transparent 100%);
+        }
+
+        /* ===== KNOWLEDGE CARDS SECTION ===== */
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 80px;
+        }
+
+        .knowledge-card {
+            background: linear-gradient(135deg, rgba(42, 47, 58, 0.6) 0%, rgba(26, 31, 46, 0.4) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 40px;
+            border-radius: 4px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            animation: cardReveal 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+        }
+
+        .knowledge-card:nth-child(1) { animation-delay: 0.1s; }
+        .knowledge-card:nth-child(2) { animation-delay: 0.2s; }
+        .knowledge-card:nth-child(3) { animation-delay: 0.3s; }
+        .knowledge-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .knowledge-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .knowledge-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.15);
+        }
+
+        .knowledge-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .knowledge-card h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--cream);
+            position: relative;
+            z-index: 2;
+        }
+
+        .knowledge-card p {
+            color: var(--text-light);
+            line-height: 1.7;
+            font-size: 0.95rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ===== ABOUT SECTION ===== */
+        .about-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .about-text h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            color: var(--cream);
+            margin-bottom: 30px;
+            line-height: 1.3;
+        }
+
+        .about-text p {
+            color: var(--text-light);
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .about-text .highlight {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .stat-box {
+            border-left: 3px solid var(--gold);
+            padding-left: 20px;
+        }
+
+        .stat-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            padding: 60px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--gold);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--accent);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 60px 40px;
+            }
+
+            .hero-content h1 {
+                font-size: 3rem;
+            }
+
+            .orb-container {
+                margin-top: 60px;
+            }
+
+            .about-section {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .cta-buttons {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section {
+                padding: 80px 30px;
+            }
+
+            .hero {
+                padding: 40px 20px;
+            }
+
+            .hero-content h1 {
+                font-size: 2.2rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .knowledge-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .orb {
+                width: 250px;
+                height: 250px;
+            }
+
+            .orb-knowledge {
+                width: 300px;
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- HERO SECTION -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Your <span class="accent-text">Digital Twin</span></h1>
+                <p class="subtitle">An AI that knows your professional expertise, your passions, your story. A digital reflection of who you are—<span class="accent-text">past, present, and future</span>.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary">Meet Your Twin</button>
+                    <button class="btn btn-secondary">Learn More</button>
+                </div>
+            </div>
+
+            <div class="orb-container">
+                <div class="orb">
+                    <div class="orb-inner">AI</div>
+                    <div class="orb-knowledge">
+                        <div class="knowledge-dot" style="top: 10%; left: 50%; animation-delay: 0s;"></div>
+                        <div class="knowledge-dot" style="top: 30%; right: 15%; animation-delay: 0.6s;"></div>
+                        <div class="knowledge-dot" style="bottom: 20%; right: 10%; animation-delay: 1.2s;"></div>
+                        <div class="knowledge-dot" style="bottom: 15%; left: 20%; animation-delay: 1.8s;"></div>
+                        <div class="knowledge-dot" style="top: 25%; left: 10%; animation-delay: 2.4s;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- KNOWLEDGE AREAS SECTION -->
+        <section class="section">
+            <h2 class="section-title">What Your Twin Knows</h2>
+            <div class="knowledge-grid">
+                <div class="knowledge-card">
+                    <span class="card-icon">💼</span>
+                    <h3>Professional Expertise</h3>
+                    <p>Every skill, project, and achievement from your career. Your twin understands your professional journey and capabilities.</p>
+                </div>
+                <div class="knowledge-card">
+                    <span class="card-icon">✨</span>
+                    <h3>Personal Interests</h3>
+                    <p>Your passions, hobbies, and what drives you. From creative pursuits to intellectual curiosities, it's all there.</p>
+                </div>
+                <div class="knowledge-card">
+                    <span class="card-icon">🧠</span>
+                    <h3>Insights & Values</h3>
+                    <p>Deep understanding of your thinking patterns, values, and what matters most to you. Personalized wisdom at your fingertips.</p>
+                </div>
+                <div class="knowledge-card">
+                    <span class="card-icon">🚀</span>
+                    <h3>Growth & Vision</h3>
+                    <p>Your goals, aspirations, and potential futures. Your twin evolves as you grow, always reflecting the real you.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT SECTION -->
+        <section class="section">
+            <div class="about-section">
+                <div class="about-text">
+                    <h2>More Than a Chatbot</h2>
+                    <p>Your digital twin is <span class="highlight">uniquely tailored to you</span>—trained on the details of your life, work, and aspirations. It doesn't just answer questions; it understands context, remembers nuance, and speaks with your voice.</p>
+                    <p>Whether you need a <span class="highlight">professional collaborator</span> to brainstorm ideas, a <span class="highlight">personal confidant</span> who knows your story, or a <span class="highlight">strategic advisor</span> who understands your vision—your twin is there.</p>
+                    <p>It's not about replacing you. It's about <span class="highlight">amplifying who you are</span>.</p>
+
+                    <div class="stats">
+                        <div class="stat-box">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">Personal</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">∞</div>
+                            <div class="stat-label">Possibilities</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="position: relative; height: 100%;">
+                    <div style="
+                        background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(0, 217, 255, 0.05) 100%);
+                        padding: 60px;
+                        border: 1px solid rgba(212, 175, 55, 0.2);
+                        border-radius: 4px;
+                        backdrop-filter: blur(10px);
+                        min-height: 300px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-family: 'Cormorant Garamond', serif;
+                        font-size: 1.1rem;
+                        color: var(--text-light);
+                        text-align: center;
+                        line-height: 1.8;
+                    ">
+                        <p>"Your digital twin isn't just an AI—<br/>it's a reflection of your potential,<br/>available whenever you need it."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>&copy; 2026 Your Digital Twin. Crafted with intention and powered by advanced AI.</p>
+            <p style="margin-top: 10px;">
+                <a href="#">About</a> •
+                <a href="#">Documentation</a> •
+                <a href="#">Privacy</a> •
+                <a href="#">Contact</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
