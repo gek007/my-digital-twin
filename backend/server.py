@@ -18,8 +18,11 @@ load_dotenv()
 
 app = FastAPI()
 
-# Configure CORS
-origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+# Configure CORS — API Gateway handles CORS in production,
+# so use permissive origins on Lambda to avoid double-validation.
+_is_lambda = bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
+_cors_raw = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+origins = ["*"] if _is_lambda else [o.strip() for o in _cors_raw.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

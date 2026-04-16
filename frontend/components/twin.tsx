@@ -48,7 +48,7 @@ export default function Twin() {
         setIsLoading(true);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_ENDPOINT || 'http://localhost:8000/chat';
+            const apiUrl = process.env.NEXT_PUBLIC_API_ENDPOINT || 'https://acpoix6w7c.execute-api.eu-west-1.amazonaws.com/chat';
             const response = await fetch(apiUrl, {
     
                 method: 'POST',
