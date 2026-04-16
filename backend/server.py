@@ -13,7 +13,7 @@ from typing import Dict, List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
-from context import prompt
+from backend.context import prompt
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
