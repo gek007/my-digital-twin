@@ -61,16 +61,21 @@ export default function Twin() {
 
             if (!response.ok) {
                 let detail = `${response.status} ${response.statusText}`;
+                const raw = await response.text();
                 try {
-                    const errBody = await response.json();
+                    const errBody = JSON.parse(raw) as {
+                        detail?: string | Array<{ msg?: string }>;
+                    };
                     if (typeof errBody?.detail === 'string') {
                         detail = errBody.detail;
                     } else if (Array.isArray(errBody?.detail)) {
                         detail = errBody.detail
-                            .map((d: { msg?: string }) => d.msg || JSON.stringify(d))
+                            .map((d) => d.msg || JSON.stringify(d))
                             .join('; ');
                     }
-                } catch { /* ignore JSON parse errors */ }
+                } catch {
+                    if (raw.trim()) detail = `${detail} — ${raw.slice(0, 500)}`;
+                }
                 console.error('Chat HTTP error:', detail);
                 throw new Error(detail);
             }

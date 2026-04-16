@@ -4,14 +4,14 @@ import { Bot, Layers, Zap } from 'lucide-react';
 const TECH_STACK = [
   { label: 'Next.js 16', color: '#f0ece4' },
   { label: 'FastAPI',    color: '#00e5b3' },
-  { label: 'OpenAI',     color: '#7c5cfc' },
+  { label: 'Bedrock',    color: '#7c5cfc' },
   { label: 'Lambda',     color: '#ff4d6d' },
   { label: 'boto3',      color: '#ff4d6d' },
   { label: 'Mangum',     color: '#00e5b3' },
 ];
 
 const STATUS_ROWS = [
-  { label: 'Model',   value: 'GPT-4o',  color: '#00e5b3', dot: false },
+  { label: 'Model',   value: 'Nova 2 Lite',  color: '#00e5b3', dot: false },
   { label: 'Backend', value: 'Online',  color: '#00e5b3', dot: true  },
   { label: 'Memory',  value: 'Session', color: '#7c5cfc', dot: false },
   { label: 'Runtime', value: 'Lambda',  color: '#ff4d6d', dot: false },
