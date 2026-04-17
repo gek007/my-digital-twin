@@ -58,6 +58,29 @@ next-env.d.ts
 # Keys
 *.pem
 
+# Terraform — https://developer.hashicorp.com/terraform/language/files/dependency-lock
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+.terraform.tfstate.lock.info
+*.backup
+*.bak.*
+
+# Lambda packages
+lambda-deployment.zip
+lambda-package/
+
+
 # Memory (optional — remove this line if you want to track conversations)
 memory/
 
