@@ -11,9 +11,9 @@ interface Message {
 }
 
 const SUGGESTED_PROMPTS = [
-    'Tell me how you like to spend your free time',
-    'How do I deploy to AWS Lambda?',
-];
+    'What are your hobbies?',
+    'What do you like to do in your professional life?',
+    ];
 
 export default function Twin() {
     const [messages, setMessages]   = useState<Message[]>([]);
@@ -158,7 +158,7 @@ export default function Twin() {
                             Hello — I&apos;m Kostya Shilkrot&apos; Digital Twin
                         </p>
                         <p className="mt-2 max-w-[17rem] text-sm leading-relaxed text-[#6e6a7c]">
-                            Ask anything about Me, Agentic AI, AWS Lambda or anything else. I respond from cloud backend.
+                            Ask anything about Me.
                         </p>
 
                         {/* Suggested prompts */}

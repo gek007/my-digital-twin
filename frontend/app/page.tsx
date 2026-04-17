@@ -155,7 +155,7 @@ export default function Home() {
               </span>
             </h1>
             <p className="opacity-0-start animate-rise-fade stagger-3 mt-3 max-w-lg text-sm text-[#6e6a7c] lg:text-[15px]">
-              Deploy your Digital Twin to the cloud — a live AI companion for the course.
+              Deploy your Digital Twin to the cloud — a live AI companion.
             </p>
           </div>
 
