@@ -16,6 +16,7 @@ build/
 node_modules/
 .next/
 out/
+frontend/public/api-config.json
 .pnp
 .pnp.*
 .yarn/*

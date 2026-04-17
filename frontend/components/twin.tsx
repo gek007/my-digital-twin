@@ -1,5 +1,6 @@
 'use client';
 
+import { getChatUrl } from '@/lib/api-base';
 import { ArrowRight, Bot, Send, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -13,6 +14,8 @@ interface Message {
 const SUGGESTED_PROMPTS = [
     'What are your hobbies?',
     'What do you like to do in your professional life?',
+    'Your interesting projects?',
+    'Your favorite places to visit?'
     ];
 
 export default function Twin() {
@@ -46,7 +49,7 @@ export default function Twin() {
         setIsLoading(true);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_ENDPOINT || 'https://acpoix6w7c.execute-api.eu-west-1.amazonaws.com/chat';
+            const apiUrl = getChatUrl();
             const response = await fetch(apiUrl, {
     
                 method: 'POST',
