@@ -20,7 +20,7 @@ const firaCode = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "Digital Twin — AI in Production",
+  title: "Digital Twin — AI in AWS Bedrock Production",
   description: "Your AI course companion for deployment & production",
 };
 

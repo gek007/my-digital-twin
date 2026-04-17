@@ -111,7 +111,7 @@ export default function Home() {
           {/* Sidebar footer */}
           <div className="border-t border-white/[0.06] px-5 py-4 flex items-center gap-2">
             <Layers className="h-3.5 w-3.5 shrink-0 text-[#6e6a7c]" />
-            <p className="font-mono text-[10px] text-[#6e6a7c]">AI in Production · Week 2</p>
+            <p className="font-mono text-[10px] text-[#6e6a7c]">AI in AWS Bedrock Production · Week 2</p>
           </div>
         </aside>
 
@@ -146,7 +146,7 @@ export default function Home() {
               Kostya Shilkrot Production
             </p>
             <h1 className="opacity-0-start animate-rise-fade stagger-2 font-display text-3xl font-extrabold leading-[1.08] md:text-4xl xl:text-[2.75rem]">
-              AI in{' '}
+              AI in AWS Bedrock{' '}
               <span
                 className="animate-shimmer bg-gradient-to-r from-[#00e5b3] via-[#7c5cfc] to-[#ff4d6d] bg-clip-text text-transparent"
                 style={{ backgroundSize: '200% auto' }}
