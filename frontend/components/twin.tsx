@@ -11,10 +11,8 @@ interface Message {
 }
 
 const SUGGESTED_PROMPTS = [
+    'Tell me how you like to spend your free time',
     'How do I deploy to AWS Lambda?',
-    'Explain the session memory architecture',
-    'Walk me through the API gateway setup',
-    'What are best practices for async APIs?',
 ];
 
 export default function Twin() {
@@ -118,10 +116,10 @@ export default function Twin() {
     };
 
     return (
-        <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0d0d15]/85 shadow-[0_32px_80px_-20px_rgb(0_0_0/0.75)] backdrop-blur-2xl">
+        <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#00e5b3]/22 bg-gradient-to-b from-[#18182a]/95 to-[#0c0c16]/95 shadow-[0_0_0_1px_rgb(0_229_179/0.08),0_28px_64px_-16px_rgb(0_0_0/0.75),0_0_48px_-12px_rgb(0_229_179/0.12)] backdrop-blur-2xl">
 
             {/* ── Terminal chrome bar ── */}
-            <div className="shrink-0 flex items-center gap-3 border-b border-white/[0.06] px-4 py-3">
+            <div className="shrink-0 flex items-center gap-3 border-b border-[#00e5b3]/12 bg-[#0f0f1a]/90 px-4 py-3">
                 {/* macOS-style traffic lights */}
                 <div className="flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
@@ -145,7 +143,7 @@ export default function Twin() {
             </div>
 
             {/* ── Messages ── */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+            <div className="flex-1 overflow-y-auto bg-[#080810]/80 p-5 space-y-5 ring-1 ring-inset ring-white/[0.04]">
 
                 {/* Empty state */}
                 {messages.length === 0 && (
@@ -157,10 +155,10 @@ export default function Twin() {
                             </div>
                         </div>
                         <p className="font-display text-[1.05rem] font-semibold text-[#f0ece4]">
-                            Hello — I&apos;m your Digital Twin
+                            Hello — I&apos;m Kostya Shilkrot&apos; Digital Twin
                         </p>
                         <p className="mt-2 max-w-[17rem] text-sm leading-relaxed text-[#6e6a7c]">
-                            Ask anything about AI deployment, APIs, or the course. I respond from your cloud backend.
+                            Ask anything about Me, Agentic AI, AWS Lambda or anything else. I respond from cloud backend.
                         </p>
 
                         {/* Suggested prompts */}
@@ -198,8 +196,8 @@ export default function Twin() {
                         <div
                             className={`max-w-[min(82%,30rem)] rounded-2xl px-4 py-3 ${
                                 message.role === 'user'
-                                    ? 'border border-[#7c5cfc]/25 bg-gradient-to-br from-[#7c5cfc]/15 to-[#7c5cfc]/5 text-[#f0ece4]'
-                                    : 'border border-white/[0.07] bg-[#13131f] text-[#f0ece4] shadow-[inset_0_1px_0_rgb(255_255_255/0.04)]'
+                                    ? 'border border-[#7c5cfc]/35 bg-gradient-to-br from-[#7c5cfc]/22 to-[#7c5cfc]/8 text-[#f0ece4] shadow-[0_4px_20px_-8px_rgb(124_92_252/0.35)]'
+                                    : 'border border-[#00e5b3]/18 bg-[#1c1c2e] text-[#f0ece4] shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_4px_16px_-8px_rgb(0_229_179/0.08)]'
                             }`}
                         >
                             <p className="whitespace-pre-wrap text-[14px] leading-relaxed">
@@ -230,7 +228,7 @@ export default function Twin() {
                                 <Bot className="h-4 w-4 text-[#00e5b3]" aria-hidden />
                             </div>
                         </div>
-                        <div className="rounded-2xl border border-white/[0.07] bg-[#13131f] px-5 py-4">
+                        <div className="rounded-2xl border border-[#00e5b3]/18 bg-[#1c1c2e] px-5 py-4 shadow-[0_4px_16px_-8px_rgb(0_229_179/0.08)]">
                             <div className="flex items-center gap-2">
                                 <span className="h-1.5 w-1.5 rounded-full bg-[#00e5b3] animate-bounce-dot" />
                                 <span className="h-1.5 w-1.5 rounded-full bg-[#00e5b3] animate-bounce-dot delay-dot-1" />
@@ -244,16 +242,16 @@ export default function Twin() {
             </div>
 
             {/* ── Input ── */}
-            <div className="shrink-0 border-t border-white/[0.06] bg-[#0a0a12]/70 p-4 backdrop-blur-xl">
+            <div className="shrink-0 border-t border-[#00e5b3]/15 bg-[#12121f]/95 p-4 backdrop-blur-xl shadow-[inset_0_1px_0_rgb(0_229_179/0.06)]">
                 <div className="flex gap-2.5">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Ask about deployment, APIs, or the course…"
+                        placeholder="Ask about Me, Agentic AI or anything else…"
                         disabled={isLoading}
-                        className="font-sans min-w-0 flex-1 rounded-xl border border-white/[0.09] bg-[#13131f]/90 px-4 py-3 text-[14px] text-[#f0ece4] placeholder:text-[#6e6a7c] outline-none transition-[border-color,box-shadow] focus:border-[#00e5b3]/40 focus:shadow-[0_0_0_3px_rgb(0_229_179/0.1)] disabled:opacity-50"
+                        className="font-sans min-w-0 flex-1 rounded-xl border border-[#00e5b3]/20 bg-[#1a1a2c]/95 px-4 py-3 text-[14px] text-[#f0ece4] placeholder:text-[#6e6a7c] outline-none transition-[border-color,box-shadow] focus:border-[#00e5b3]/45 focus:shadow-[0_0_0_3px_rgb(0_229_179/0.1)] disabled:opacity-50"
                     />
                     <button
                         type="button"
