@@ -19,3 +19,8 @@ https://dsq4r0cbghqha.cloudfront.net/     (test)
 - cd ..\
 - .\scripts\deploy.ps1 dev 
 
+( or - .\scripts\deploy.ps1 test )  
+
+# Destroy all resources 
+
+.\scripts\destroy.ps1 test  
