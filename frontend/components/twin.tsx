@@ -12,10 +12,8 @@ interface Message {
 }
 
 const SUGGESTED_PROMPTS = [
-    'What are your hobbies?',
-    'What do you like to do in your professional life?',
-    'Your interesting projects?',
-    'Your favorite places to visit?'
+    'How do you spend your free time?',
+    'Your last interesting projects?',
     ];
 
 export default function Twin() {

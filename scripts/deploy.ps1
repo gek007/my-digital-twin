@@ -3,6 +3,10 @@ param(
     [string]$ProjectName = "twin"
 )
 $ErrorActionPreference = "Stop"
+# PS 7.2+: native commands (terraform) writing to stderr must not terminate the script when exit code is handled
+if ($PSVersionTable.PSVersion.Major -ge 7) {
+    $PSNativeCommandUseErrorActionPreference = $false
+}
 
 Write-Host "Deploying $ProjectName to $Environment ..." -ForegroundColor Green
 
@@ -20,9 +24,11 @@ Set-Location terraform
 terraform init -input=false
 if ($LASTEXITCODE -ne 0) { throw "terraform init failed (exit $LASTEXITCODE)" }
 
-terraform workspace select $Environment 2>$null
+# "select" fails when the workspace does not exist yet — expected; stderr must not stop the script
+cmd /c "terraform workspace select $Environment 2>nul"
 if ($LASTEXITCODE -ne 0) {
     terraform workspace new $Environment
+    if ($LASTEXITCODE -ne 0) { throw "terraform workspace new failed (exit $LASTEXITCODE)" }
 }
 
 if ($Environment -eq "prod") {

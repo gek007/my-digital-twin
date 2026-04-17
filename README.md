@@ -8,6 +8,14 @@ npx create-next-app@latest frontend --typescript --tailwind --app --no-src-dir
 
 # access to app via internet (from cloudfront)
 
-d3a70otuz0olbv.cloudfront.net
+https://d340rgajzh7p4.cloudfront.net/     (dev)
+https://dsq4r0cbghqha.cloudfront.net/     (test) 
 
+# Run deployment with Terraform:
+
+- cd \terraform 
+- terraform init 
+
+- cd ..\
+- .\scripts\deploy.ps1 dev 
 
