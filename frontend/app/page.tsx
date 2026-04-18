@@ -159,9 +159,9 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Chat widget */}
+          {/* Chat widget — inset from the right (10cm on large screens) */}
           <div className="flex-1 px-6 pb-8 lg:px-10 lg:pb-10">
-            <div className="opacity-0-start animate-rise-fade stagger-4 h-[min(600px,62vh)] min-h-[440px]">
+            <div className="opacity-0-start animate-rise-fade stagger-4 mr-6 h-[min(600px,62vh)] min-h-[440px] lg:mr-[10cm]">
               <Twin />
             </div>
           </div>
