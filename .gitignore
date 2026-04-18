@@ -34,6 +34,9 @@ coverage/
 .coverage
 htmlcov/
 
+# Claude Code local worktrees (do not commit)
+.claude/worktrees/
+
 # IDE
 .vscode/
 .idea/

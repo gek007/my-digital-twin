@@ -1,4 +1,5 @@
 import Twin from '@/components/twin';
+import GlobeWidget from '@/components/globe-widget';
 import { Bot, Layers, Zap } from 'lucide-react';
 
 const TECH_STACK = [
@@ -159,8 +160,8 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Chat widget */}
-          <div className="flex-1 px-6 pb-8 lg:px-10 lg:pb-10">
+          {/* Chat widget – right side reserved for the fixed globe */}
+          <div className="flex-1 px-6 pb-8 lg:px-10 lg:pb-10 lg:pr-[320px]">
             <div className="opacity-0-start animate-rise-fade stagger-4 h-[min(600px,62vh)] min-h-[440px]">
               <Twin />
             </div>
@@ -176,6 +177,12 @@ export default function Home() {
         </main>
 
       </div>
+
+      {/* Globe – fixed top-right corner, desktop only */}
+      <div className="pointer-events-none fixed top-[19px] right-[19px] z-30 hidden lg:block">
+        <GlobeWidget size={300} />
+      </div>
+
     </div>
   );
 }
