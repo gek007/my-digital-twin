@@ -29,18 +29,18 @@ terraform init -input=false \
 
 terraform workspace select "$ENVIRONMENT" 2>/dev/null || terraform workspace new "$ENVIRONMENT"
 
-GITHUB_REPO="${GITHUB_REPOSITORY:-gek007/my-digital-twin}"
+TF_VARS="-var=project_name=$PROJECT_NAME -var=environment=$ENVIRONMENT"
 
 # Import pre-existing resources into state so terraform apply doesn't try to recreate them
 echo "Importing existing resources into Terraform state (safe to ignore 'already managed' errors)..."
-terraform import aws_s3_bucket.frontend        "twin-$ENVIRONMENT-frontend-$AWS_ACCOUNT_ID" 2>/dev/null || true
-terraform import aws_s3_bucket.memory          "twin-$ENVIRONMENT-memory-$AWS_ACCOUNT_ID"   2>/dev/null || true
-terraform import aws_iam_role.lambda_role      "twin-$ENVIRONMENT-lambda-role"              2>/dev/null || true
+terraform import $TF_VARS -input=false aws_s3_bucket.frontend   "twin-$ENVIRONMENT-frontend-$AWS_ACCOUNT_ID" 2>/dev/null || true
+terraform import $TF_VARS -input=false aws_s3_bucket.memory     "twin-$ENVIRONMENT-memory-$AWS_ACCOUNT_ID"   2>/dev/null || true
+terraform import $TF_VARS -input=false aws_iam_role.lambda_role "twin-$ENVIRONMENT-lambda-role"              2>/dev/null || true
 
 if [ "$ENVIRONMENT" = "prod" ]; then
-  terraform apply -var-file="prod.tfvars" -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -var="github_repository=$GITHUB_REPO" -auto-approve
+  terraform apply -var-file="prod.tfvars" $TF_VARS -auto-approve
 else
-  terraform apply -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -var="github_repository=$GITHUB_REPO" -auto-approve
+  terraform apply $TF_VARS -auto-approve
 fi
 
 TF_JSON=$(terraform output -json)
