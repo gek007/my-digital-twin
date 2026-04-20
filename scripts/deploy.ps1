@@ -21,17 +21,7 @@ Set-Location $root
 
 # 2. Terraform workspace & apply
 Set-Location terraform
-
-$awsAccountId = aws sts get-caller-identity --query Account --output text
-$awsRegion = if ($env:DEFAULT_AWS_REGION) { $env:DEFAULT_AWS_REGION } else { "eu-west-1" }
-terraform init -input=false `
-  -backend-config="bucket=twin-terraform-state-$awsAccountId" `
-  -backend-config="key=$Environment/terraform.tfstate" `
-  -backend-config="region=$awsRegion" `
-  -backend-config="dynamodb_table=twin-terraform-locks" `
-  -backend-config="encrypt=true"
-
-
+terraform init -input=false
 if ($LASTEXITCODE -ne 0) { throw "terraform init failed (exit $LASTEXITCODE)" }
 
 # "select" fails when the workspace does not exist yet — expected; stderr must not stop the script
