@@ -14,6 +14,11 @@ on:
           - dev
           - test
           - prod
+      skip_cloudfront_invalidation:
+        description: 'Skip CloudFront invalidation (keeps existing cache)'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   id-token: write
@@ -80,6 +85,7 @@ jobs:
           echo "frontend_bucket=$(terraform output -raw s3_frontend_bucket)" >> $GITHUB_OUTPUT
 
       - name: Invalidate CloudFront
+        if: ${{ github.event.inputs.skip_cloudfront_invalidation != 'true' }}
         run: |
           DISTRIBUTION_ID=$(aws cloudfront list-distributions \
             --query "DistributionList.Items[?Origins.Items[?DomainName=='${{ steps.deploy_outputs.outputs.frontend_bucket }}.s3-website-${{ secrets.DEFAULT_AWS_REGION }}.amazonaws.com']].Id | [0]" \
