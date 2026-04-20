@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash ~/.claude/statusline-command.sh)",
+      "Bash(bash /c/Users/DELL-PC/.claude/statusline-command.sh)",
+      "Bash(xargs grep *)"
+    ]
+  }
+}
