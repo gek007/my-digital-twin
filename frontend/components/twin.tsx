@@ -156,7 +156,7 @@ export default function Twin() {
                             </div>
                         </div>
                         <p className="font-display text-[1.05rem] font-semibold text-[#f0ece4]">
-                            Hello — I&apos;m Kostya Shilkrot&apos; Digital Twin
+                            Hey — I&apos;m Kostya Shilkrot&apos; Digital Twin
                         </p>
                         <p className="mt-2 max-w-[17rem] text-sm leading-relaxed text-[#6e6a7c]">
                             Ask anything about Me.
