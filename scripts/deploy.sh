@@ -29,10 +29,12 @@ terraform init -input=false \
 
 terraform workspace select "$ENVIRONMENT" 2>/dev/null || terraform workspace new "$ENVIRONMENT"
 
+GITHUB_REPO="${GITHUB_REPOSITORY:-gek007/my-digital-twin}"
+
 if [ "$ENVIRONMENT" = "prod" ]; then
-  terraform apply -var-file="prod.tfvars" -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -auto-approve
+  terraform apply -var-file="prod.tfvars" -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -var="github_repository=$GITHUB_REPO" -auto-approve
 else
-  terraform apply -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -auto-approve
+  terraform apply -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -var="github_repository=$GITHUB_REPO" -auto-approve
 fi
 
 TF_JSON=$(terraform output -json)
