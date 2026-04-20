@@ -30,12 +30,62 @@ terraform init -input=false \
 terraform workspace select "$ENVIRONMENT" 2>/dev/null || terraform workspace new "$ENVIRONMENT"
 
 TF_VARS="-var=project_name=$PROJECT_NAME -var=environment=$ENVIRONMENT"
+NAME="twin-$ENVIRONMENT"
 
-# Import pre-existing resources into state so terraform apply doesn't try to recreate them
-echo "Importing existing resources into Terraform state (safe to ignore 'already managed' errors)..."
-terraform import $TF_VARS -input=false aws_s3_bucket.frontend   "twin-$ENVIRONMENT-frontend-$AWS_ACCOUNT_ID" 2>/dev/null || true
-terraform import $TF_VARS -input=false aws_s3_bucket.memory     "twin-$ENVIRONMENT-memory-$AWS_ACCOUNT_ID"   2>/dev/null || true
-terraform import $TF_VARS -input=false aws_iam_role.lambda_role "twin-$ENVIRONMENT-lambda-role"              2>/dev/null || true
+# Import pre-existing resources into Terraform state (safe — errors are suppressed)
+echo "Importing existing AWS resources into Terraform state..."
+
+# S3 buckets and their configurations
+terraform import $TF_VARS -input=false aws_s3_bucket.frontend                          "$NAME-frontend-$AWS_ACCOUNT_ID" 2>/dev/null || true
+terraform import $TF_VARS -input=false aws_s3_bucket_public_access_block.frontend      "$NAME-frontend-$AWS_ACCOUNT_ID" 2>/dev/null || true
+terraform import $TF_VARS -input=false aws_s3_bucket_website_configuration.frontend    "$NAME-frontend-$AWS_ACCOUNT_ID" 2>/dev/null || true
+terraform import $TF_VARS -input=false aws_s3_bucket_policy.frontend                   "$NAME-frontend-$AWS_ACCOUNT_ID" 2>/dev/null || true
+terraform import $TF_VARS -input=false aws_s3_bucket.memory                            "$NAME-memory-$AWS_ACCOUNT_ID"   2>/dev/null || true
+terraform import $TF_VARS -input=false aws_s3_bucket_public_access_block.memory        "$NAME-memory-$AWS_ACCOUNT_ID"   2>/dev/null || true
+terraform import $TF_VARS -input=false aws_s3_bucket_ownership_controls.memory         "$NAME-memory-$AWS_ACCOUNT_ID"   2>/dev/null || true
+
+# IAM role and policy attachments
+terraform import $TF_VARS -input=false aws_iam_role.lambda_role                        "$NAME-lambda-role"              2>/dev/null || true
+terraform import $TF_VARS -input=false aws_iam_role_policy_attachment.lambda_basic     "$NAME-lambda-role/arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole" 2>/dev/null || true
+terraform import $TF_VARS -input=false aws_iam_role_policy_attachment.lambda_bedrock   "$NAME-lambda-role/arn:aws:iam::aws:policy/AmazonBedrockFullAccess"                  2>/dev/null || true
+terraform import $TF_VARS -input=false aws_iam_role_policy_attachment.lambda_s3        "$NAME-lambda-role/arn:aws:iam::aws:policy/AmazonS3FullAccess"                       2>/dev/null || true
+
+# Lambda function
+terraform import $TF_VARS -input=false aws_lambda_function.api                         "$NAME-api"                      2>/dev/null || true
+
+# Lambda permission
+terraform import $TF_VARS -input=false aws_lambda_permission.api_gw                    "$NAME-api/AllowExecutionFromAPIGateway" 2>/dev/null || true
+
+# API Gateway — look up ID dynamically then import dependent resources
+API_GW_ID=$(aws apigatewayv2 get-apis \
+  --query "Items[?Name=='$NAME-api-gateway'].ApiId | [0]" \
+  --output text 2>/dev/null || true)
+
+if [ -n "$API_GW_ID" ] && [ "$API_GW_ID" != "None" ]; then
+  terraform import $TF_VARS -input=false aws_apigatewayv2_api.main        "$API_GW_ID"              2>/dev/null || true
+  terraform import $TF_VARS -input=false aws_apigatewayv2_stage.default   "$API_GW_ID/\$default"    2>/dev/null || true
+
+  INTEGRATION_ID=$(aws apigatewayv2 get-integrations --api-id "$API_GW_ID" \
+    --query "Items[0].IntegrationId" --output text 2>/dev/null || true)
+  [ -n "$INTEGRATION_ID" ] && [ "$INTEGRATION_ID" != "None" ] && \
+    terraform import $TF_VARS -input=false aws_apigatewayv2_integration.lambda "$API_GW_ID/$INTEGRATION_ID" 2>/dev/null || true
+
+  while IFS=$'\t' read -r ROUTE_ID ROUTE_KEY; do
+    case "$ROUTE_KEY" in
+      "GET /")       terraform import $TF_VARS -input=false aws_apigatewayv2_route.get_root  "$API_GW_ID/$ROUTE_ID" 2>/dev/null || true ;;
+      "POST /chat")  terraform import $TF_VARS -input=false aws_apigatewayv2_route.post_chat "$API_GW_ID/$ROUTE_ID" 2>/dev/null || true ;;
+      "GET /health") terraform import $TF_VARS -input=false aws_apigatewayv2_route.get_health "$API_GW_ID/$ROUTE_ID" 2>/dev/null || true ;;
+    esac
+  done < <(aws apigatewayv2 get-routes --api-id "$API_GW_ID" \
+    --query "Items[*].[RouteId,RouteKey]" --output text 2>/dev/null || true)
+fi
+
+# CloudFront distribution — look up by S3 origin
+CF_DIST_ID=$(aws cloudfront list-distributions \
+  --query "DistributionList.Items[?Origins.Items[?contains(DomainName,'$NAME-frontend-$AWS_ACCOUNT_ID')]].Id | [0]" \
+  --output text 2>/dev/null || true)
+[ -n "$CF_DIST_ID" ] && [ "$CF_DIST_ID" != "None" ] && \
+  terraform import $TF_VARS -input=false aws_cloudfront_distribution.main "$CF_DIST_ID" 2>/dev/null || true
 
 if [ "$ENVIRONMENT" = "prod" ]; then
   terraform apply -var-file="prod.tfvars" $TF_VARS -auto-approve
