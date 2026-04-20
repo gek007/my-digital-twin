@@ -117,10 +117,10 @@ export default function Twin() {
     };
 
     return (
-        <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#00e5b3]/22 bg-gradient-to-b from-[#18182a]/95 to-[#0c0c16]/95 shadow-[0_0_0_1px_rgb(0_229_179/0.08),0_28px_64px_-16px_rgb(0_0_0/0.75),0_0_48px_-12px_rgb(0_229_179/0.12)] backdrop-blur-2xl">
+        <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#00e5b3]/22 bg-gradient-to-b from-[#0a1e1a]/95 to-[#04100d]/95 shadow-[0_0_0_1px_rgb(0_229_179/0.08),0_28px_64px_-16px_rgb(0_0_0/0.75),0_0_48px_-12px_rgb(0_229_179/0.12)] backdrop-blur-2xl">
 
             {/* ── Terminal chrome bar ── */}
-            <div className="shrink-0 flex items-center gap-3 border-b border-[#00e5b3]/12 bg-[#0f0f1a]/90 px-4 py-3">
+            <div className="shrink-0 flex items-center gap-3 border-b border-[#00e5b3]/12 bg-[#071510]/90 px-4 py-3">
                 {/* macOS-style traffic lights */}
                 <div className="flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
@@ -144,7 +144,7 @@ export default function Twin() {
             </div>
 
             {/* ── Messages ── */}
-            <div className="flex-1 overflow-y-auto bg-[#080810]/80 p-5 space-y-5 ring-1 ring-inset ring-white/[0.04]">
+            <div className="flex-1 overflow-y-auto bg-[#040f0c]/80 p-5 space-y-5 ring-1 ring-inset ring-white/[0.04]">
 
                 {/* Empty state */}
                 {messages.length === 0 && (
@@ -243,7 +243,7 @@ export default function Twin() {
             </div>
 
             {/* ── Input ── */}
-            <div className="shrink-0 border-t border-[#00e5b3]/15 bg-[#12121f]/95 p-4 backdrop-blur-xl shadow-[inset_0_1px_0_rgb(0_229_179/0.06)]">
+            <div className="shrink-0 border-t border-[#00e5b3]/15 bg-[#07150f]/95 p-4 backdrop-blur-xl shadow-[inset_0_1px_0_rgb(0_229_179/0.06)]">
                 <div className="flex gap-2.5">
                     <input
                         type="text"
