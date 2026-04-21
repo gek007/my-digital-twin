@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit, Bricolage_Grotesque, Fira_Code } from "next/font/google";
+import { Bricolage_Grotesque, Fira_Code, Outfit } from "next/font/google";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -20,8 +20,8 @@ const firaCode = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "Digital Twin — AI in AWS Bedrock Production",
-  description: "Your AI course companion for deployment & production",
+  title: "Kostya Shilkrot's Digital Twin — AI in AWS Bedrock Production",
+  description: "AI companion for AWS Bedrock production",
 };
 
 export default function RootLayout({

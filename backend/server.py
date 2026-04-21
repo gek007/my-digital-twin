@@ -63,7 +63,7 @@ bedrock_runtime = boto3.client("bedrock-runtime", region_name=_bedrock_region())
 # Inference profile ID (must match AWS exactly — see Bedrock console / inference profiles).
 # Invalid combo: global.amazon.nova-lite-v1:0 (no such global profile for Nova Lite v1).
 # Examples: global.amazon.nova-2-lite-v1:0 | eu.amazon.nova-lite-v1:0 (EU) | us.amazon.nova-lite-v1:0
-BEDROCK_MODEL_ID = (os.getenv("BEDROCK_MODEL_ID") or "global.amazon.nova-2-lite-v1:0").strip()
+BEDROCK_MODEL_ID = (os.getenv("BEDROCK_MODEL_ID") or "eu.amazon.nova-2-lite-v1:0").strip()
 
 logger.info(
     "Bedrock client: region=%s model_id=%s",

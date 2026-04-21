@@ -2,6 +2,7 @@
 
 import { getChatUrl } from '@/lib/api-base';
 import { ArrowRight, Bot, Send, User } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 interface Message {
@@ -21,6 +22,7 @@ export default function Twin() {
     const [input, setInput]         = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [sessionId, setSessionId] = useState<string>('');
+    const [hasAvatar, setHasAvatar] = useState(false);
     const messagesEndRef            = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -30,6 +32,12 @@ export default function Twin() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    useEffect(() => {
+        fetch('/avatar.jpg', { method: 'HEAD' })
+            .then(res => setHasAvatar(res.ok))
+            .catch(() => setHasAvatar(false));
+    }, []);
 
     const sendMessage = async (text?: string) => {
         const messageText = (text ?? input).trim();
@@ -49,7 +57,6 @@ export default function Twin() {
         try {
             const apiUrl = getChatUrl();
             const response = await fetch(apiUrl, {
-    
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -116,6 +123,37 @@ export default function Twin() {
         }
     };
 
+    const AssistantAvatar = ({ size }: { size: 'sm' | 'lg' }) => {
+        if (size === 'lg') {
+            return hasAvatar ? (
+                <Image
+                    src="/avatar.jpg"
+                    alt="Digital Twin Avatar"
+                    width={72}
+                    height={72}
+                    className="relative rounded-3xl border border-white/[0.1] object-cover"
+                />
+            ) : (
+                <div className="relative flex h-[72px] w-[72px] items-center justify-center rounded-3xl border border-white/[0.1] bg-gradient-to-br from-[#00e5b3]/15 via-transparent to-[#7c5cfc]/15">
+                    <Bot className="h-8 w-8 text-[#f0ece4]" strokeWidth={1.2} aria-hidden />
+                </div>
+            );
+        }
+        return hasAvatar ? (
+            <Image
+                src="/avatar.jpg"
+                alt="Digital Twin Avatar"
+                width={32}
+                height={32}
+                className="h-8 w-8 rounded-xl border border-[#00e5b3]/20 object-cover"
+            />
+        ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#00e5b3]/20 bg-[#00e5b3]/10">
+                <Bot className="h-4 w-4 text-[#00e5b3]" aria-hidden />
+            </div>
+        );
+    };
+
     return (
         <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#00e5b3]/22 bg-gradient-to-b from-[#0a1e1a]/95 to-[#04100d]/95 shadow-[0_0_0_1px_rgb(0_229_179/0.08),0_28px_64px_-16px_rgb(0_0_0/0.75),0_0_48px_-12px_rgb(0_229_179/0.12)] backdrop-blur-2xl">
 
@@ -151,12 +189,10 @@ export default function Twin() {
                     <div className="flex flex-col items-center justify-center py-6 text-center">
                         <div className="relative mb-6">
                             <div className="animate-pulse-ring absolute inset-0 rounded-3xl bg-[#00e5b3]/15 blur-xl" />
-                            <div className="relative flex h-[72px] w-[72px] items-center justify-center rounded-3xl border border-white/[0.1] bg-gradient-to-br from-[#00e5b3]/15 via-transparent to-[#7c5cfc]/15">
-                                <Bot className="h-8 w-8 text-[#f0ece4]" strokeWidth={1.2} aria-hidden />
-                            </div>
+                            <AssistantAvatar size="lg" />
                         </div>
                         <p className="font-display text-[1.05rem] font-semibold text-[#f0ece4]">
-                            Hey — I&apos;m Kostya Shilkrot&apos; Digital Twin
+                            Hey — I&apos;m Kostya Shilkrot&apos;s Digital Twin
                         </p>
                         <p className="mt-2 max-w-[17rem] text-sm leading-relaxed text-[#6e6a7c]">
                             Ask anything about Me.
@@ -188,9 +224,7 @@ export default function Twin() {
                     >
                         {message.role === 'assistant' && (
                             <div className="shrink-0 pt-0.5">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#00e5b3]/20 bg-[#00e5b3]/10">
-                                    <Bot className="h-4 w-4 text-[#00e5b3]" aria-hidden />
-                                </div>
+                                <AssistantAvatar size="sm" />
                             </div>
                         )}
 
@@ -225,9 +259,7 @@ export default function Twin() {
                 {isLoading && (
                     <div className="flex gap-3 justify-start">
                         <div className="shrink-0 pt-0.5">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#00e5b3]/20 bg-[#00e5b3]/10">
-                                <Bot className="h-4 w-4 text-[#00e5b3]" aria-hidden />
-                            </div>
+                            <AssistantAvatar size="sm" />
                         </div>
                         <div className="rounded-2xl border border-[#00e5b3]/18 bg-[#1c1c2e] px-5 py-4 shadow-[0_4px_16px_-8px_rgb(0_229_179/0.08)]">
                             <div className="flex items-center gap-2">
